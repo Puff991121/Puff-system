@@ -1,12 +1,35 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
-const router = useRouter()
-const loading = ref(false)
-const form = reactive({ username: 'admin', password: 'admin123' })
-const submit = async () => { loading.value = true; await new Promise((r) => setTimeout(r, 500)); loading.value = false; router.push('/dashboard') }
-</script>
 
+import { login } from '@/api/auth'
+import { useUserStore } from '@/stores/user'
+
+const router = useRouter()
+const userStore = useUserStore()
+const loading = ref(false)
+
+const form = reactive({
+  username: '',
+  password: '',
+})
+
+const submit = async () => {
+  if (!form.username || !form.password) return
+
+  loading.value = true
+
+  try {
+    const result = await login(form)
+
+    userStore.setToken(result.access_token)
+
+    await router.push('/dashboard')
+  } finally {
+    loading.value = false
+  }
+}
+</script>
 <template>
   <main class="login-page">
     <section class="login-art">

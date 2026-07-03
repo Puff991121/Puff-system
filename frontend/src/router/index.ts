@@ -22,7 +22,13 @@ const router = createRouter({ history: createWebHistory(), routes })
 router.beforeEach((to) => {
   document.title = `${String(to.meta.title || '管理后台')} · Puff Admin`
   // 后端登录接口就绪后，可取消下一行注释启用登录鉴权。
-  // if (!to.meta.public && !localStorage.getItem('access_token')) return '/login'
+  if (!to.meta.public && !localStorage.getItem('access_token')) {
+    return '/login'
+  }
+
+  if (to.path === '/login' && localStorage.getItem('access_token')) {
+    return '/dashboard'
+  }
 })
 
 export default router

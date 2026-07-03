@@ -36,12 +36,12 @@ backend/
 
 ```bash
 cd backend
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install --upgrade pip
-python -m pip install -e '.[dev]'
-cp .env.example .env
-uvicorn app.main:app --reload
+python3 -m venv .venv                  # 创建名为 .venv 的 Python 虚拟环境
+source .venv/bin/activate              # 激活虚拟环境，使依赖安装在当前项目内
+python -m pip install --upgrade pip     # 将 pip 包管理工具升级到最新版本
+python -m pip install -e '.[dev]'       # 以开发模式安装项目及测试、代码检查等开发依赖
+cp .env.example .env                   # 复制环境变量模板，生成本地配置文件
+uvicorn app.main:app --reload           # 启动后端服务，并在代码修改后自动重启
 ```
 
 Windows PowerShell 激活命令为：
@@ -52,6 +52,7 @@ Windows PowerShell 激活命令为：
 
 服务默认地址为 `http://127.0.0.1:8000`。开发环境可访问：
 
+- 服务入口：`http://127.0.0.1:8000/`
 - Swagger UI：`http://127.0.0.1:8000/docs`
 - ReDoc：`http://127.0.0.1:8000/redoc`
 - 健康检查：`http://127.0.0.1:8000/api/health`
@@ -86,6 +87,22 @@ Content-Type: application/json
 
 成功后返回 Bearer Token。初始账号仅用于本地开发，请在 `.env` 中修改；正式用户系统应接入数据库并保存密码哈希，不能沿用此演示账号方案。
 
+### 订单管理
+
+订单接口统一使用 `/api/orders` 前缀，并要求请求头携带登录返回的 Bearer Token：
+
+```text
+GET    /api/orders             # 分页、筛选和排序
+GET    /api/orders/{id}        # 订单详情
+POST   /api/orders             # 新增订单
+PATCH  /api/orders/{id}        # 修改订单
+DELETE /api/orders/{id}        # 删除订单
+POST   /api/orders/import      # 导入 .xlsx
+GET    /api/orders/export      # 导出 .xlsx
+```
+
+订单只对所属用户可见，金额以 `Decimal` 处理并使用 MySQL `DECIMAL(18,2)` 保存。完整参数及响应格式以 Swagger 文档和前端的 `orders.md` 约定为准。
+
 ## 5. 环境配置
 
 复制 `.env.example` 为 `.env` 后修改配置。环境变量均使用 `APP_` 前缀：
@@ -98,6 +115,7 @@ Content-Type: application/json
 | `APP_SECRET_KEY` | JWT 签名密钥，生产环境必须替换 |
 | `APP_ACCESS_TOKEN_EXPIRE_MINUTES` | Token 有效分钟数 |
 | `APP_CORS_ORIGINS` | 允许跨域的前端地址（JSON 数组） |
+| `APP_DATABASE_URL` | MySQL 数据库连接地址 |
 | `APP_ADMIN_USERNAME` | 本地演示管理员账号 |
 | `APP_ADMIN_PASSWORD` | 本地演示管理员密码 |
 
@@ -110,7 +128,11 @@ pytest                         # 运行测试
 pytest --cov=app               # 查看测试覆盖率
 ruff check .                   # 静态检查
 ruff format .                  # 格式化代码
+alembic upgrade head           # 将数据库表结构升级到最新版
+python -m app.scripts.create_admin # 将 .env 中的管理员安全写入 MySQL
 ```
+
+管理员密码会使用 Argon2 哈希后存入 `users.password_hash`，不会保存明文。初始化脚本可以重复执行；管理员已存在时不会重复写入。
 
 ## 7. 新增业务模块
 

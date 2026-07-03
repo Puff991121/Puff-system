@@ -19,6 +19,7 @@ class Settings(BaseSettings):
     secret_key: str = Field("development-only-secret-key-change-me", min_length=32)
     access_token_expire_minutes: int = Field(120, gt=0)
     cors_origins: list[str] = ["http://localhost:5173", "http://127.0.0.1:5173"]
+    database_url: str = "mysql+pymysql://root@127.0.0.1:3306/puff_system?charset=utf8mb4"
     admin_username: str = "admin"
     admin_password: str = "admin123"
 
