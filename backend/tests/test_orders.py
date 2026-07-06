@@ -1,4 +1,5 @@
 from collections.abc import Generator
+from datetime import timedelta
 from io import BytesIO
 
 import pytest
@@ -12,6 +13,7 @@ from app.core.database import Base, get_db
 from app.core.security import create_access_token
 from app.main import app
 from app.models import User
+from app.services.orders import now
 
 engine = create_engine(
     "sqlite://",
@@ -147,6 +149,48 @@ def test_export_orders(client: TestClient, headers: dict[str, str]) -> None:
         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
     assert response.content.startswith(b"PK")
+
+
+def test_order_summary_is_scoped_and_aggregated(
+    client: TestClient, headers: dict[str, str]
+) -> None:
+    today = now().date()
+    month_start = today.replace(day=1)
+    previous_month = month_start - timedelta(days=1)
+
+    client.post(
+        "/api/orders",
+        headers=headers,
+        json=order_payload(order_date=today.isoformat(), price="100.10"),
+    )
+    client.post(
+        "/api/orders",
+        headers=headers,
+        json=order_payload(order_date=month_start.isoformat(), price="200.20"),
+    )
+    client.post(
+        "/api/orders",
+        headers=headers,
+        json=order_payload(order_date=previous_month.isoformat(), price="300.30"),
+    )
+    other_headers = {"Authorization": f"Bearer {create_access_token('other')}"}
+    client.post(
+        "/api/orders",
+        headers=other_headers,
+        json=order_payload(order_date=today.isoformat(), price="999.00"),
+    )
+
+    response = client.get("/api/orders/summary", headers=headers)
+    assert response.status_code == 200
+    data = response.json()["data"]
+    expected_today_count = 2 if month_start == today else 1
+    expected_today_amount = "300.30" if month_start == today else "100.10"
+    assert data["today_count"] == expected_today_count
+    assert data["today_amount"] == expected_today_amount
+    assert data["month_count"] == 2
+    assert data["month_amount"] == "300.30"
+    assert data["total_count"] == 3
+    assert data["total_amount"] == "600.60"
 
 
 def test_import_orders_allows_partial_success(client: TestClient, headers: dict[str, str]) -> None:

@@ -47,6 +47,15 @@ export interface OrderPage {
     total_pages: number
 }
 
+export interface OrderSummary {
+    today_amount: string
+    today_count: number
+    month_amount: string
+    month_count: number
+    total_amount: string
+    total_count: number
+}
+
 export interface ImportResult {
     total_rows: number
     success_count: number
@@ -62,6 +71,9 @@ export interface ImportResult {
 
 export const getOrders = (params: OrderQuery) =>
     request.get<never, ApiResponse<OrderPage>>('/orders', { params })
+
+export const getOrderSummary = () =>
+    request.get<never, ApiResponse<OrderSummary>>('/orders/summary')
 
 export const getOrder = (id: number) =>
     request.get<never, ApiResponse<Order>>(`/orders/${id}`)

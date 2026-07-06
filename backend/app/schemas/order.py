@@ -117,6 +117,19 @@ class OrderPage(BaseModel):
     total_pages: int
 
 
+class OrderSummary(BaseModel):
+    today_amount: Decimal
+    today_count: int
+    month_amount: Decimal
+    month_count: int
+    total_amount: Decimal
+    total_count: int
+
+    @field_serializer("today_amount", "month_amount", "total_amount")
+    def serialize_amount(self, value: Decimal) -> str:
+        return f"{value:.2f}"
+
+
 class DeletedOrder(BaseModel):
     deleted_id: int
 

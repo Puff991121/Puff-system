@@ -93,6 +93,7 @@ Content-Type: application/json
 
 ```text
 GET    /api/orders             # 分页、筛选和排序
+GET    /api/orders/summary     # 今日、本月和累计成交统计
 GET    /api/orders/{id}        # 订单详情
 POST   /api/orders             # 新增订单
 PATCH  /api/orders/{id}        # 修改订单

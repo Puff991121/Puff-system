@@ -92,6 +92,36 @@ def list_orders(
     return list(db.scalars(statement).all()), total
 
 
+def get_order_summary(db: Session, user_id: int) -> dict[str, Decimal | int]:
+    today = now().date()
+    month_start = today.replace(day=1)
+
+    def aggregate(
+        start_date: date | None = None, end_date: date | None = None
+    ) -> tuple[Decimal, int]:
+        filters = [Order.user_id == user_id]
+        if start_date is not None:
+            filters.append(Order.order_date >= start_date)
+        if end_date is not None:
+            filters.append(Order.order_date <= end_date)
+        amount, count = db.execute(
+            select(func.coalesce(func.sum(Order.price), 0), func.count(Order.id)).where(*filters)
+        ).one()
+        return Decimal(amount), int(count)
+
+    today_amount, today_count = aggregate(today, today)
+    month_amount, month_count = aggregate(month_start, today)
+    total_amount, total_count = aggregate()
+    return {
+        "today_amount": today_amount,
+        "today_count": today_count,
+        "month_amount": month_amount,
+        "month_count": month_count,
+        "total_amount": total_amount,
+        "total_count": total_count,
+    }
+
+
 def get_order(db: Session, user_id: int, order_id: int) -> Order | None:
     return db.scalar(select(Order).where(Order.id == order_id, Order.user_id == user_id))
 

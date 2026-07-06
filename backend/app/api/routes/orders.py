@@ -24,6 +24,7 @@ from app.schemas.order import (
     OrderCreate,
     OrderPage,
     OrderRead,
+    OrderSummary,
     OrderUpdate,
     PaymentMethod,
     ResponseEnvelope,
@@ -34,6 +35,7 @@ from app.services.orders import (
     delete_order,
     filtered_orders_query,
     get_order,
+    get_order_summary,
     list_orders,
     new_order,
     update_order,
@@ -100,6 +102,11 @@ def get_orders(
             total_pages=ceil(total / page_size) if total else 0,
         )
     )
+
+
+@router.get("/summary", response_model=ResponseEnvelope[OrderSummary], summary="查询订单成交统计")
+def order_summary(db: Db, current_user: CurrentUser) -> dict:
+    return response(OrderSummary(**get_order_summary(db, current_user.id)))
 
 
 @router.get("/export", summary="导出订单 Excel")

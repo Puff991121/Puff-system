@@ -3,23 +3,36 @@ import { nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import { Delete, Download, Edit, Plus, Refresh, Search, Upload } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
+import { useAppStore } from '@/stores/app'
 import {
   createOrder,
   deleteOrder,
   exportOrderFile,
+  getOrderSummary,
   getOrders,
   importOrderFile,
   updateOrder,
   type Order,
+  type OrderSummary,
   type PaymentMethod,
   type WorkFormat,
 } from '@/api/orders'
 
+const appStore = useAppStore()
 const orders = ref<Order[]>([])
 const loading = ref(false)
 const page = ref(1)
 const pageSize = ref(10)
 const total = ref(0)
+const summaryLoading = ref(false)
+const summary = ref<OrderSummary>({
+  today_amount: '0.00',
+  today_count: 0,
+  month_amount: '0.00',
+  month_count: 0,
+  total_amount: '0.00',
+  total_count: 0,
+})
 
 const keyword = ref('')
 const payment = ref<PaymentMethod | ''>('')
@@ -82,6 +95,24 @@ const loadOrders = async () => {
   }
 }
 
+const loadSummary = async () => {
+  summaryLoading.value = true
+  try {
+    const result = await getOrderSummary()
+    summary.value = result.data
+  } finally {
+    summaryLoading.value = false
+  }
+}
+
+const refreshOrderData = () => Promise.all([loadOrders(), loadSummary()])
+
+const formatAmount = (value: string) =>
+  `¥ ${Number(value).toLocaleString('zh-CN', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`
+
 let filterTimer: ReturnType<typeof setTimeout> | undefined
 watch([keyword, payment, dateRange], () => {
   page.value = 1
@@ -89,7 +120,7 @@ watch([keyword, payment, dateRange], () => {
   filterTimer = setTimeout(loadOrders, 300)
 })
 
-onMounted(loadOrders)
+onMounted(refreshOrderData)
 onBeforeUnmount(() => clearTimeout(filterTimer))
 
 const resetFilters = () => {
@@ -136,7 +167,7 @@ const importOrders = async (event: Event) => {
       ElMessage.success(`成功导入 ${success_count} 条订单`)
     }
     page.value = 1
-    await loadOrders()
+    await refreshOrderData()
   } finally {
     importing.value = false
   }
@@ -178,7 +209,7 @@ const removeOrder = async (id: number) => {
   await deleteOrder(id)
   ElMessage.success('订单删除成功')
   if (orders.value.length === 1 && page.value > 1) page.value -= 1
-  await loadOrders()
+  await refreshOrderData()
 }
 
 const submitOrder = async () => {
@@ -203,7 +234,7 @@ const submitOrder = async () => {
     }
     dialogVisible.value = false
     page.value = 1
-    await loadOrders()
+    await refreshOrderData()
   } finally {
     submitting.value = false
   }
@@ -224,10 +255,10 @@ const submitOrder = async () => {
           @click="openCreateDialog">新增订单</el-button></div>
     </div>
 
-    <section class="order-summary">
-      <div><span>今日订单</span><strong>18</strong><small>较昨日 +12.5%</small></div>
-      <div><span>今日成交</span><strong>¥ 4,286</strong><small>已支付 15 笔</small></div>
-      <div><span>待支付</span><strong>3</strong><small>金额 ¥ 867</small></div>
+    <section v-loading="summaryLoading" class="order-summary">
+      <div><span>今日成交</span><strong>{{ formatAmount(summary.today_amount) }}</strong><small>共 {{ summary.today_count }} 笔订单</small></div>
+      <div><span>月成交</span><strong>{{ formatAmount(summary.month_amount) }}</strong><small>本月共 {{ summary.month_count }} 笔订单</small></div>
+      <div><span>总成交</span><strong>{{ formatAmount(summary.total_amount) }}</strong><small>累计 {{ summary.total_count }} 笔订单</small></div>
     </section>
 
     <section class="panel resource-panel order-panel">
@@ -287,8 +318,9 @@ const submitOrder = async () => {
           layout="total, prev, pager, next" :total="total" @current-change="loadOrders" /></div>
     </section>
 
-    <el-dialog v-model="dialogVisible" class="order-dialog" modal-class="order-dialog-overlay" width="760px"
-      align-center destroy-on-close :close-on-click-modal="false">
+    <el-dialog v-model="dialogVisible" class="order-dialog"
+      :modal-class="`order-dialog-overlay ${appStore.sidebarCollapsed ? 'is-sidebar-collapsed' : ''}`" width="640px"
+      align-center append-to-body destroy-on-close :close-on-click-modal="false">
       <template #header>
         <div class="dialog-heading"><span>{{ editingId ? 'EDIT ORDER' : 'NEW ORDER' }}</span>
           <h3>{{ editingId ? '修改订单' : '新增订单' }}</h3>
