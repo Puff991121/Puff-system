@@ -122,10 +122,12 @@ class OrderSummary(BaseModel):
     today_count: int
     month_amount: Decimal
     month_count: int
+    year_amount: Decimal
+    year_count: int
     total_amount: Decimal
     total_count: int
 
-    @field_serializer("today_amount", "month_amount", "total_amount")
+    @field_serializer("today_amount", "month_amount", "year_amount", "total_amount")
     def serialize_amount(self, value: Decimal) -> str:
         return f"{value:.2f}"
 

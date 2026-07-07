@@ -1,5 +1,5 @@
 from collections.abc import Generator
-from datetime import timedelta
+from datetime import date, timedelta
 from io import BytesIO
 
 import pytest
@@ -189,8 +189,39 @@ def test_order_summary_is_scoped_and_aggregated(
     assert data["today_amount"] == expected_today_amount
     assert data["month_count"] == 2
     assert data["month_amount"] == "300.30"
+    expected_year_count = 2 + int(previous_month.year == today.year)
+    expected_year_amount = "600.60" if previous_month.year == today.year else "300.30"
+    assert data["year_count"] == expected_year_count
+    assert data["year_amount"] == expected_year_amount
     assert data["total_count"] == 3
     assert data["total_amount"] == "600.60"
+
+
+def test_order_summary_uses_reference_date_for_month_and_year(
+    client: TestClient, headers: dict[str, str]
+) -> None:
+    for order_date, price in (
+        (date(2024, 3, 5), "100.00"),
+        (date(2024, 3, 28), "200.00"),
+        (date(2024, 8, 1), "300.00"),
+        (date(2023, 3, 1), "400.00"),
+    ):
+        client.post(
+            "/api/orders",
+            headers=headers,
+            json=order_payload(order_date=order_date.isoformat(), price=price),
+        )
+
+    response = client.get(
+        "/api/orders/summary?reference_date=2024-03-15", headers=headers
+    )
+
+    assert response.status_code == 200
+    data = response.json()["data"]
+    assert data["month_count"] == 2
+    assert data["month_amount"] == "300.00"
+    assert data["year_count"] == 3
+    assert data["year_amount"] == "600.00"
 
 
 def test_import_orders_allows_partial_success(client: TestClient, headers: dict[str, str]) -> None:

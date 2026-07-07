@@ -648,7 +648,7 @@ strong {
 
 .order-summary {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px;
   margin: -10px 0 16px;
 }
@@ -1014,6 +1014,10 @@ strong {
   font-size: 11px;
 }
 
+.order-panel .pagination {
+  justify-content: flex-end;
+}
+
 .settings-page {
   max-width: 900px;
 }
@@ -1257,6 +1261,84 @@ strong {
 
 .asset-sync .el-icon {
   color: var(--green-600);
+}
+
+.repayment-reminder {
+  display: flex;
+  min-height: 58px;
+  margin-bottom: 16px;
+  padding: 10px 13px;
+  align-items: center;
+  gap: 18px;
+  border: 1px solid #e3dfcf;
+  border-radius: 14px;
+  background: linear-gradient(105deg, #fffdf6 0%, #f7f8f1 100%);
+  box-shadow: 0 8px 24px rgba(48, 62, 53, .05);
+}
+
+.repayment-reminder-title {
+  display: flex;
+  min-width: 150px;
+  align-items: center;
+  gap: 10px;
+}
+
+.repayment-reminder-icon {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 10px;
+  color: #966624;
+  background: #f6ead2;
+}
+
+.repayment-reminder-title div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.repayment-reminder-title strong {
+  color: #3f4f49;
+  font-size: 12px;
+}
+
+.repayment-reminder-title small {
+  color: #a49b82;
+  font-size: 7px;
+  letter-spacing: 1.3px;
+}
+
+.repayment-date-list {
+  display: grid;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  grid-template-columns: repeat(5, minmax(86px, 1fr));
+  list-style: none;
+}
+
+.repayment-date-list li {
+  display: flex;
+  padding: 3px 14px;
+  align-items: baseline;
+  justify-content: center;
+  gap: 7px;
+  border-left: 1px solid #e5e2d7;
+  white-space: nowrap;
+}
+
+.repayment-date-list span {
+  color: #78827e;
+  font-size: 10px;
+}
+
+.repayment-date-list strong {
+  color: #354a42;
+  font-size: 11px;
+  font-weight: 700;
 }
 
 .asset-overview {
@@ -1750,6 +1832,19 @@ strong {
     grid-template-columns: repeat(2, 1fr);
   }
 
+  .repayment-reminder {
+    align-items: flex-start;
+  }
+
+  .repayment-date-list {
+    grid-template-columns: repeat(3, minmax(86px, 1fr));
+    row-gap: 8px;
+  }
+
+  .repayment-date-list li:nth-child(4) {
+    grid-column: 1;
+  }
+
   .asset-stat.net {
     grid-column: span 2;
   }
@@ -1831,6 +1926,27 @@ strong {
 
   .asset-overview {
     grid-template-columns: 1fr;
+  }
+
+  .repayment-reminder {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .repayment-date-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 7px;
+  }
+
+  .repayment-date-list li,
+  .repayment-date-list li:nth-child(4) {
+    padding: 7px 9px;
+    grid-column: auto;
+    justify-content: space-between;
+    border: 1px solid #e8e3d5;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, .56);
   }
 
   .account-page-actions {

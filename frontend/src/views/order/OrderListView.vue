@@ -30,6 +30,8 @@ const summary = ref<OrderSummary>({
   today_count: 0,
   month_amount: '0.00',
   month_count: 0,
+  year_amount: '0.00',
+  year_count: 0,
   total_amount: '0.00',
   total_count: 0,
 })
@@ -98,7 +100,9 @@ const loadOrders = async () => {
 const loadSummary = async () => {
   summaryLoading.value = true
   try {
-    const result = await getOrderSummary()
+    const result = await getOrderSummary(
+      dateRange.value ? formatDate(dateRange.value[0]) : undefined,
+    )
     summary.value = result.data
   } finally {
     summaryLoading.value = false
@@ -114,10 +118,14 @@ const formatAmount = (value: string) =>
   })}`
 
 let filterTimer: ReturnType<typeof setTimeout> | undefined
-watch([keyword, payment, dateRange], () => {
+watch([keyword, payment, dateRange], (_, previousValues) => {
   page.value = 1
   clearTimeout(filterTimer)
-  filterTimer = setTimeout(loadOrders, 300)
+  const dateChanged = previousValues?.[2] !== dateRange.value
+  filterTimer = setTimeout(
+    () => dateChanged ? refreshOrderData() : loadOrders(),
+    300,
+  )
 })
 
 onMounted(refreshOrderData)
@@ -257,7 +265,8 @@ const submitOrder = async () => {
 
     <section v-loading="summaryLoading" class="order-summary">
       <div><span>今日成交</span><strong>{{ formatAmount(summary.today_amount) }}</strong><small>共 {{ summary.today_count }} 笔订单</small></div>
-      <div><span>月成交</span><strong>{{ formatAmount(summary.month_amount) }}</strong><small>本月共 {{ summary.month_count }} 笔订单</small></div>
+      <div><span>月成交</span><strong>{{ formatAmount(summary.month_amount) }}</strong><small>当月共 {{ summary.month_count }} 笔订单</small></div>
+      <div><span>年成交</span><strong>{{ formatAmount(summary.year_amount) }}</strong><small>当年共 {{ summary.year_count }} 笔订单</small></div>
       <div><span>总成交</span><strong>{{ formatAmount(summary.total_amount) }}</strong><small>累计 {{ summary.total_count }} 笔订单</small></div>
     </section>
 

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from decimal import Decimal
 from uuid import uuid4
 from zoneinfo import ZoneInfo
@@ -92,9 +92,20 @@ def list_orders(
     return list(db.scalars(statement).all()), total
 
 
-def get_order_summary(db: Session, user_id: int) -> dict[str, Decimal | int]:
+def get_order_summary(
+    db: Session, user_id: int, reference_date: date | None = None
+) -> dict[str, Decimal | int]:
     today = now().date()
-    month_start = today.replace(day=1)
+    period_date = reference_date or today
+    month_start = period_date.replace(day=1)
+    next_month = (
+        month_start.replace(year=month_start.year + 1, month=1)
+        if month_start.month == 12
+        else month_start.replace(month=month_start.month + 1)
+    )
+    month_end = today if reference_date is None else next_month - timedelta(days=1)
+    year_start = period_date.replace(month=1, day=1)
+    year_end = today if reference_date is None else period_date.replace(month=12, day=31)
 
     def aggregate(
         start_date: date | None = None, end_date: date | None = None
@@ -110,13 +121,16 @@ def get_order_summary(db: Session, user_id: int) -> dict[str, Decimal | int]:
         return Decimal(amount), int(count)
 
     today_amount, today_count = aggregate(today, today)
-    month_amount, month_count = aggregate(month_start, today)
+    month_amount, month_count = aggregate(month_start, month_end)
+    year_amount, year_count = aggregate(year_start, year_end)
     total_amount, total_count = aggregate()
     return {
         "today_amount": today_amount,
         "today_count": today_count,
         "month_amount": month_amount,
         "month_count": month_count,
+        "year_amount": year_amount,
+        "year_count": year_count,
         "total_amount": total_amount,
         "total_count": total_count,
     }

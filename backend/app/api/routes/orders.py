@@ -105,8 +105,14 @@ def get_orders(
 
 
 @router.get("/summary", response_model=ResponseEnvelope[OrderSummary], summary="查询订单成交统计")
-def order_summary(db: Db, current_user: CurrentUser) -> dict:
-    return response(OrderSummary(**get_order_summary(db, current_user.id)))
+def order_summary(
+    db: Db,
+    current_user: CurrentUser,
+    reference_date: date | None = None,
+) -> dict:
+    return response(
+        OrderSummary(**get_order_summary(db, current_user.id, reference_date=reference_date))
+    )
 
 
 @router.get("/export", summary="导出订单 Excel")

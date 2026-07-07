@@ -93,7 +93,7 @@ Content-Type: application/json
 
 ```text
 GET    /api/orders             # 分页、筛选和排序
-GET    /api/orders/summary     # 今日、本月和累计成交统计
+GET    /api/orders/summary     # 今日、指定日期所在月/年和累计成交统计（可传 reference_date）
 GET    /api/orders/{id}        # 订单详情
 POST   /api/orders             # 新增订单
 PATCH  /api/orders/{id}        # 修改订单
@@ -103,6 +103,19 @@ GET    /api/orders/export      # 导出 .xlsx
 ```
 
 订单只对所属用户可见，金额以 `Decimal` 处理并使用 MySQL `DECIMAL(18,2)` 保存。完整参数及响应格式以 Swagger 文档和前端的 `orders.md` 约定为准。
+
+### 资产管理
+
+资产接口统一使用 `/api/assets` 前缀，并要求 Bearer Token：
+
+```text
+GET    /api/assets                 # 查询账户列表与实时汇总
+POST   /api/assets/accounts        # 新增资产或负债账户
+PATCH  /api/assets/accounts/{id}   # 修改名称、金额或排序
+DELETE /api/assets/accounts/{id}   # 删除账户
+```
+
+资产与负债按当前用户隔离，金额使用 `Decimal` 和 MySQL `DECIMAL(18,2)`，净资产与负债率由后端实时计算。
 
 ## 5. 环境配置
 
