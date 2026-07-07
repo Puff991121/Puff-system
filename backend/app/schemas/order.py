@@ -132,6 +132,21 @@ class OrderSummary(BaseModel):
         return f"{value:.2f}"
 
 
+class OrderTrendItem(BaseModel):
+    month: int
+    amount: Decimal
+    count: int
+
+    @field_serializer("amount")
+    def serialize_amount(self, value: Decimal) -> str:
+        return f"{value:.2f}"
+
+
+class OrderTrend(BaseModel):
+    year: int
+    items: list[OrderTrendItem]
+
+
 class DeletedOrder(BaseModel):
     deleted_id: int
 

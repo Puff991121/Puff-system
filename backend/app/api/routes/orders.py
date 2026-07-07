@@ -25,6 +25,7 @@ from app.schemas.order import (
     OrderPage,
     OrderRead,
     OrderSummary,
+    OrderTrend,
     OrderUpdate,
     PaymentMethod,
     ResponseEnvelope,
@@ -36,6 +37,7 @@ from app.services.orders import (
     filtered_orders_query,
     get_order,
     get_order_summary,
+    get_order_trend,
     list_orders,
     new_order,
     update_order,
@@ -112,6 +114,17 @@ def order_summary(
 ) -> dict:
     return response(
         OrderSummary(**get_order_summary(db, current_user.id, reference_date=reference_date))
+    )
+
+
+@router.get("/trend", response_model=ResponseEnvelope[OrderTrend], summary="查询年度月度收入趋势")
+def order_trend(
+    db: Db,
+    current_user: CurrentUser,
+    year: Annotated[int, Query(ge=2000, le=2100)] = date.today().year,
+) -> dict:
+    return response(
+        OrderTrend(year=year, items=get_order_trend(db, current_user.id, year))
     )
 
 

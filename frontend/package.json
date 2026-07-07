@@ -12,6 +12,7 @@
   "dependencies": {
     "@element-plus/icons-vue": "^2.3.2",
     "axios": "^1.7.9",
+    "echarts": "^6.1.0",
     "element-plus": "^2.9.3",
     "pinia": "^2.3.0",
     "read-excel-file": "^9.2.0",

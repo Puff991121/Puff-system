@@ -136,6 +136,26 @@ def get_order_summary(
     }
 
 
+def get_order_trend(db: Session, user_id: int, year: int) -> list[dict[str, Decimal | int]]:
+    items: list[dict[str, Decimal | int]] = []
+    for month in range(1, 13):
+        start = date(year, month, 1)
+        end = (
+            date(year + 1, 1, 1)
+            if month == 12
+            else date(year, month + 1, 1)
+        )
+        amount, count = db.execute(
+            select(func.coalesce(func.sum(Order.price), 0), func.count(Order.id)).where(
+                Order.user_id == user_id,
+                Order.order_date >= start,
+                Order.order_date < end,
+            )
+        ).one()
+        items.append({"month": month, "amount": Decimal(amount), "count": int(count)})
+    return items
+
+
 def get_order(db: Session, user_id: int, order_id: int) -> Order | None:
     return db.scalar(select(Order).where(Order.id == order_id, Order.user_id == user_id))
 

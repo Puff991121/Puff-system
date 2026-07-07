@@ -58,6 +58,15 @@ export interface OrderSummary {
     total_count: number
 }
 
+export interface OrderTrend {
+    year: number
+    items: Array<{
+        month: number
+        amount: string
+        count: number
+    }>
+}
+
 export interface ImportResult {
     total_rows: number
     success_count: number
@@ -77,6 +86,11 @@ export const getOrders = (params: OrderQuery) =>
 export const getOrderSummary = (referenceDate?: string) =>
     request.get<never, ApiResponse<OrderSummary>>('/orders/summary', {
         params: { reference_date: referenceDate },
+    })
+
+export const getOrderTrend = (year?: number) =>
+    request.get<never, ApiResponse<OrderTrend>>('/orders/trend', {
+        params: { year },
     })
 
 export const getOrder = (id: number) =>

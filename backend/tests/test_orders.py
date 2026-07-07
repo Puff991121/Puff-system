@@ -224,6 +224,41 @@ def test_order_summary_uses_reference_date_for_month_and_year(
     assert data["year_amount"] == "600.00"
 
 
+def test_order_trend_returns_all_months_and_is_scoped(
+    client: TestClient, headers: dict[str, str]
+) -> None:
+    client.post(
+        "/api/orders",
+        headers=headers,
+        json=order_payload(order_date="2026-01-05", price="100.10"),
+    )
+    client.post(
+        "/api/orders",
+        headers=headers,
+        json=order_payload(order_date="2026-01-20", price="200.20"),
+    )
+    client.post(
+        "/api/orders",
+        headers=headers,
+        json=order_payload(order_date="2026-07-01", price="300.30"),
+    )
+    other_headers = {"Authorization": f"Bearer {create_access_token('other')}"}
+    client.post(
+        "/api/orders",
+        headers=other_headers,
+        json=order_payload(order_date="2026-01-01", price="999.00"),
+    )
+
+    response = client.get("/api/orders/trend?year=2026", headers=headers)
+    assert response.status_code == 200
+    data = response.json()["data"]
+    assert data["year"] == 2026
+    assert len(data["items"]) == 12
+    assert data["items"][0] == {"month": 1, "amount": "300.30", "count": 2}
+    assert data["items"][6] == {"month": 7, "amount": "300.30", "count": 1}
+    assert data["items"][11] == {"month": 12, "amount": "0.00", "count": 0}
+
+
 def test_import_orders_allows_partial_success(client: TestClient, headers: dict[str, str]) -> None:
     workbook = Workbook()
     sheet = workbook.active

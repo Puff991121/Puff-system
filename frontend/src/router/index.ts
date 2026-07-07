@@ -10,7 +10,6 @@ const routes: RouteRecordRaw[] = [
       { path: 'orders', name: 'Orders', component: () => import('@/views/order/OrderListView.vue'), meta: { title: '订单管理' } },
       { path: 'assets', name: 'Assets', component: () => import('@/views/asset/AssetManagementView.vue'), meta: { title: '资产管理' } },
       { path: 'account-data', name: 'AccountData', component: () => import('@/views/account/AccountDataView.vue'), meta: { title: '账号数据' } },
-      { path: 'users', name: 'Users', component: () => import('@/views/user/UserListView.vue'), meta: { title: '用户管理' } },
       { path: 'settings', name: 'Settings', component: () => import('@/views/system/SettingsView.vue'), meta: { title: '系统设置' } },
     ],
   },
