@@ -8,6 +8,7 @@ const routes: RouteRecordRaw[] = [
     children: [
       { path: 'dashboard', name: 'Dashboard', component: () => import('@/views/dashboard/DashboardView.vue'), meta: { title: '数据概览' } },
       { path: 'orders', name: 'Orders', component: () => import('@/views/order/OrderListView.vue'), meta: { title: '订单管理' } },
+      { path: 'expenses', name: 'Expenses', component: () => import('@/views/expense/ExpenseListView.vue'), meta: { title: '消费记录' } },
       { path: 'assets', name: 'Assets', component: () => import('@/views/asset/AssetManagementView.vue'), meta: { title: '资产管理' } },
       { path: 'account-data', name: 'AccountData', component: () => import('@/views/account/AccountDataView.vue'), meta: { title: '账号数据' } },
       { path: 'settings', name: 'Settings', component: () => import('@/views/system/SettingsView.vue'), meta: { title: '系统设置' } },

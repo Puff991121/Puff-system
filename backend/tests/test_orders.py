@@ -212,9 +212,7 @@ def test_order_summary_uses_reference_date_for_month_and_year(
             json=order_payload(order_date=order_date.isoformat(), price=price),
         )
 
-    response = client.get(
-        "/api/orders/summary?reference_date=2024-03-15", headers=headers
-    )
+    response = client.get("/api/orders/summary?reference_date=2024-03-15", headers=headers)
 
     assert response.status_code == 200
     data = response.json()["data"]

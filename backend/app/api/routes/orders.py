@@ -123,9 +123,7 @@ def order_trend(
     current_user: CurrentUser,
     year: Annotated[int, Query(ge=2000, le=2100)] = date.today().year,
 ) -> dict:
-    return response(
-        OrderTrend(year=year, items=get_order_trend(db, current_user.id, year))
-    )
+    return response(OrderTrend(year=year, items=get_order_trend(db, current_user.id, year)))
 
 
 @router.get("/export", summary="导出订单 Excel")

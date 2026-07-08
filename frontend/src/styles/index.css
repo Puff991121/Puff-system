@@ -17,6 +17,10 @@
   --shadow: 0 14px 40px rgba(31, 45, 39, .06);
 }
 
+.expense-dialog-overlay {
+  background: transparent !important;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -757,21 +761,6 @@ strong {
 .order-price {
   color: var(--green-900);
   font-size: 12px;
-}
-
-.payment-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 10px;
-}
-
-.payment-chip::before {
-  width: 7px;
-  height: 7px;
-  border-radius: 2px;
-  background: currentColor;
-  content: '';
 }
 
 .payment-chip.wechat {
