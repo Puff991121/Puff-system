@@ -24,6 +24,8 @@ const loading = ref(false)
 const page = ref(1)
 const pageSize = ref(10)
 const total = ref(0)
+const sortBy = ref<'order_date' | 'price'>('order_date')
+const sortOrder = ref<'asc' | 'desc'>('desc')
 const summaryLoading = ref(false)
 const summary = ref<OrderSummary>({
   today_amount: '0.00',
@@ -78,8 +80,8 @@ const filterParams = () => ({
   payment_method: payment.value || undefined,
   start_date: dateRange.value ? formatDate(dateRange.value[0]) : undefined,
   end_date: dateRange.value ? formatDate(dateRange.value[1]) : undefined,
-  sort_by: 'order_date' as const,
-  sort_order: 'desc' as const,
+  sort_by: sortBy.value,
+  sort_order: sortOrder.value,
 })
 
 const loadOrders = async () => {
@@ -135,6 +137,13 @@ const resetFilters = () => {
   keyword.value = ''
   payment.value = ''
   dateRange.value = null
+}
+
+const changePriceSort = ({ order }: { order: 'ascending' | 'descending' | null }) => {
+  sortBy.value = order ? 'price' : 'order_date'
+  sortOrder.value = order === 'ascending' ? 'asc' : 'desc'
+  page.value = 1
+  loadOrders()
 }
 
 const exportOrders = async () => {
@@ -284,7 +293,7 @@ const submitOrder = async () => {
         <el-button :icon="Refresh" aria-label="重置筛选" @click="resetFilters">重置</el-button>
       </div>
 
-      <el-table v-loading="loading" :data="orders" empty-text="暂无符合条件的订单">
+      <el-table v-loading="loading" :data="orders" empty-text="暂无符合条件的订单" @sort-change="changePriceSort">
         <el-table-column label="日期" width="118">
           <template #default="scope">
             <div class="order-time"><strong>{{ scope.row.order_date }}</strong></div>
@@ -299,7 +308,7 @@ const submitOrder = async () => {
         <el-table-column label="格式" min-width="95"><template #default="scope"><span class="format-badge">{{
           scope.row.format }}</span></template></el-table-column>
         <el-table-column prop="school" label="学校" min-width="130" />
-        <el-table-column label="价格" min-width="105">
+        <el-table-column prop="price" label="价格" min-width="105" sortable="custom">
           <template #default="scope"><strong class="order-price">¥ {{ Number(scope.row.price).toFixed(2)
           }}</strong></template>
         </el-table-column>
