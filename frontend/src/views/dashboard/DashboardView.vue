@@ -24,6 +24,9 @@ const assetAccounts = ref<AssetAccount[]>([])
 const assetChartRef = ref<HTMLDivElement>()
 let assetChart: ECharts | undefined
 let assetChartResizeObserver: ResizeObserver | undefined
+const assetChartData = computed(() => assetAccounts.value
+  .map((item) => ({ name: item.account, value: Number(item.amount) })))
+const hasAssetAccounts = computed(() => assetAccounts.value.length > 0)
 
 const maxRevenue = computed(() => Math.max(...monthlyRevenue.value, 0))
 const revenueScale = computed(() => {
@@ -109,9 +112,7 @@ const loadRevenueTrend = async () => {
 const renderAssetChart = () => {
   if (!assetChartRef.value) return
   assetChart ??= init(assetChartRef.value)
-  const data = assetAccounts.value
-    .map((item) => ({ name: item.account, value: Number(item.amount) }))
-    .filter((item) => item.value > 0)
+  const data = assetChartData.value
 
   assetChart.setOption({
     color: ['#15966c', '#51bc91', '#8fd3b8', '#e7ad4a', '#528ce5', '#85a9e8', '#d36f5c'],
@@ -241,7 +242,7 @@ onBeforeUnmount(() => {
         </div>
         <div class="asset-chart-wrap">
           <div ref="assetChartRef" class="asset-chart" role="img" aria-label="资产账户余额占比饼图"></div>
-          <div v-if="!assetLoading && !assetAccounts.some((item) => Number(item.amount) > 0)" class="chart-empty">
+          <div v-if="!assetLoading && !hasAssetAccounts" class="chart-empty">
             暂无资产数据
           </div>
         </div>
