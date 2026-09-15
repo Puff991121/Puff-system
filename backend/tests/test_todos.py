@@ -112,6 +112,25 @@ def test_todo_summary_and_overdue(client: TestClient, headers: dict[str, str]) -
     }
 
 
+def test_pending_todos_are_listed_before_completed(
+    client: TestClient, headers: dict[str, str]
+) -> None:
+    client.post(
+        "/api/todos",
+        headers=headers,
+        json=payload(title="已完成事项", status="completed"),
+    )
+    client.post(
+        "/api/todos",
+        headers=headers,
+        json=payload(title="待完成事项", status="pending"),
+    )
+
+    items = client.get("/api/todos", headers=headers).json()["data"]["items"]
+
+    assert [item["status"] for item in items] == ["pending", "completed"]
+
+
 def test_todo_validation_auth_and_user_isolation(
     client: TestClient, headers: dict[str, str]
 ) -> None:

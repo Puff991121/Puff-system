@@ -45,9 +45,10 @@ def filtered_todos_query(
 def list_todos(db: Session, user_id: int, *, page: int, page_size: int, **filters):
     base = filtered_todos_query(user_id, **filters)
     total = db.scalar(select(func.count()).select_from(base.subquery())) or 0
+    status_order = case((Todo.status == "pending", 0), else_=1)
     priority_order = case((Todo.priority == "high", 0), (Todo.priority == "medium", 1), else_=2)
     items = db.scalars(
-        base.order_by(Todo.status.asc(), Todo.scheduled_date.asc(), priority_order, Todo.id.desc())
+        base.order_by(status_order, Todo.scheduled_date.asc(), priority_order, Todo.id.desc())
         .offset((page - 1) * page_size)
         .limit(page_size)
     ).all()

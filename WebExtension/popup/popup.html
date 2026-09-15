@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Puff 账号监测</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <header class="masthead">
+        <div>
+          <p class="eyebrow">PUFF / XHS MONITOR</p>
+          <h1>账号脉搏</h1>
+        </div>
+        <span id="connectionDot" class="connection-dot" title="当前状态"></span>
+      </header>
+
+      <section class="account-strip" aria-label="当前账号">
+        <div>
+          <span class="label">当前浏览器</span>
+          <strong id="accountLabel">账号 1</strong>
+        </div>
+        <span id="autoBadge" class="pill">手动采集</span>
+      </section>
+
+      <button id="collectButton" class="collect-button" type="button">
+        <span class="button-index">01</span>
+        <span>
+          <strong>采集当前页面</strong>
+          <small>读取后台中此刻可见的数据</small>
+        </span>
+        <span class="arrow" aria-hidden="true">↗</span>
+      </button>
+
+      <p id="status" class="status" role="status">等待采集</p>
+
+      <section id="metricsSection" class="metrics-section" hidden>
+        <div class="section-heading">
+          <h2>最新快照</h2>
+          <time id="captureTime"></time>
+        </div>
+        <div id="metricsGrid" class="metrics-grid"></div>
+        <div class="snapshot-actions">
+          <button id="copyButton" class="text-button" type="button">复制 JSON</button>
+          <button id="exportButton" class="text-button" type="button">导出历史</button>
+        </div>
+      </section>
+
+      <details class="settings-panel">
+        <summary>浏览器账号与采集设置 <span>＋</span></summary>
+        <form id="settingsForm">
+          <label>
+            <span>账号名称</span>
+            <input id="accountName" name="accountName" maxlength="40" required />
+          </label>
+          <label>
+            <span>账号标识</span>
+            <input id="accountId" name="accountId" pattern="[A-Za-z0-9_-]+" required />
+          </label>
+          <label>
+            <span>本地接收地址</span>
+            <input id="endpoint" name="endpoint" type="url" placeholder="http://127.0.0.1:8787/api/snapshots" />
+            <small>留空则只保存在当前浏览器。仅允许本机地址。</small>
+          </label>
+          <label>
+            <span>访问令牌（可选）</span>
+            <input id="accessToken" name="accessToken" type="password" autocomplete="off" />
+          </label>
+          <div class="inline-fields">
+            <label class="switch-row">
+              <span>自动采集</span>
+              <input id="autoCollect" name="autoCollect" type="checkbox" />
+            </label>
+            <label>
+              <span>间隔/分钟</span>
+              <input id="intervalMinutes" name="intervalMinutes" type="number" min="5" max="1440" />
+            </label>
+          </div>
+          <button class="save-button" type="submit">保存此浏览器配置</button>
+        </form>
+      </details>
+
+      <footer>数据仅从当前登录账号的创作后台可见页面读取</footer>
+    </main>
+    <script src="popup.js"></script>
+  </body>
+</html>
