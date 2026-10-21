@@ -8,6 +8,7 @@ import { Calendar, Coin, ShoppingCart } from '@element-plus/icons-vue'
 import { getAssetPage, type AssetAccount } from '@/api/assets'
 import { getOrderSummary, getOrderTrend, type OrderSummary } from '@/api/orders'
 import MetricCard from '@/components/MetricCard.vue'
+import TemplateRankingChart from '@/components/TemplateRankingChart.vue'
 
 use([PieChart, TooltipComponent, LegendComponent, CanvasRenderer])
 
@@ -248,6 +249,6 @@ onBeforeUnmount(() => {
         </div>
       </section>
     </div>
-
+    <TemplateRankingChart />
   </div>
 </template>

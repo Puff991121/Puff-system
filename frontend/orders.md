@@ -478,3 +478,29 @@ KEY idx_orders_user_payment (user_id, payment_method)
 8. 导入错误必须准确返回 Excel 行号、字段、原始值和错误原因。
 9. 导出必须复用列表查询的筛选逻辑，避免页面数据和导出结果不一致。
 10. 如果支持多人同时修改，建议增加 `version` 字段或使用 `updated_at` 实现乐观锁。
+
+## 15. 概览页模板销量排名
+
+```http
+GET /api/orders/template-ranking
+Authorization: Bearer <access_token>
+```
+
+按当前用户全部订单的 `template` 字段分组，按订单数降序返回最多 10 个模板；订单数相同时按模板名称升序排列，名次从 1 连续编号。统计不受概览页收入趋势的年份选择影响，无订单时返回空数组。
+
+排名统计将 `非遗刺绣`、`新刺绣` 统一归入 `刺绣`，合并订单数后再排序取前十。该归并仅用于排名统计，订单中保存的原模板名称保持不变。
+
+```json
+{
+  "code": 0,
+  "message": "success",
+  "data": {
+    "items": [
+      { "rank": 1, "template": "学术论文标准版", "count": 32 },
+      { "rank": 2, "template": "网页课程模板", "count": 18 }
+    ]
+  }
+}
+```
+
+概览页在收入趋势和资产分布下方使用 ECharts 横向条形图展示排名、模板名称和订单数，长名称可通过悬停查看。

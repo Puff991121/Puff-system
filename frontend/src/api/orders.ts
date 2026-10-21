@@ -67,6 +67,16 @@ export interface OrderTrend {
     }>
 }
 
+export interface OrderTemplateRankingItem {
+    rank: number
+    template: string
+    count: number
+}
+
+export interface OrderTemplateRanking {
+    items: OrderTemplateRankingItem[]
+}
+
 export interface ImportResult {
     total_rows: number
     success_count: number
@@ -92,6 +102,9 @@ export const getOrderTrend = (year?: number) =>
     request.get<never, ApiResponse<OrderTrend>>('/orders/trend', {
         params: { year },
     })
+
+export const getOrderTemplateRanking = () =>
+    request.get<never, ApiResponse<OrderTemplateRanking>>('/orders/template-ranking')
 
 export const getOrder = (id: number) =>
     request.get<never, ApiResponse<Order>>(`/orders/${id}`)

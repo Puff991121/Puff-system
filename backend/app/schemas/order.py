@@ -147,6 +147,16 @@ class OrderTrend(BaseModel):
     items: list[OrderTrendItem]
 
 
+class OrderTemplateRankingItem(BaseModel):
+    rank: int
+    template: str
+    count: int
+
+
+class OrderTemplateRanking(BaseModel):
+    items: list[OrderTemplateRankingItem]
+
+
 class DeletedOrder(BaseModel):
     deleted_id: int
 

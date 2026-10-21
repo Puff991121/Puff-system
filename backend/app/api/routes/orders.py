@@ -25,6 +25,7 @@ from app.schemas.order import (
     OrderPage,
     OrderRead,
     OrderSummary,
+    OrderTemplateRanking,
     OrderTrend,
     OrderUpdate,
     PaymentMethod,
@@ -38,6 +39,7 @@ from app.services.orders import (
     get_order,
     get_order_summary,
     get_order_trend,
+    get_template_ranking,
     list_orders,
     new_order,
     update_order,
@@ -124,6 +126,15 @@ def order_trend(
     year: Annotated[int, Query(ge=2000, le=2100)] = date.today().year,
 ) -> dict:
     return response(OrderTrend(year=year, items=get_order_trend(db, current_user.id, year)))
+
+
+@router.get(
+    "/template-ranking",
+    response_model=ResponseEnvelope[OrderTemplateRanking],
+    summary="查询模板订单数前十排名",
+)
+def template_ranking(db: Db, current_user: CurrentUser) -> dict:
+    return response(OrderTemplateRanking(items=get_template_ranking(db, current_user.id)))
 
 
 @router.get("/export", summary="导出订单 Excel")

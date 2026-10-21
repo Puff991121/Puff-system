@@ -257,6 +257,126 @@ def test_order_trend_returns_all_months_and_is_scoped(
     assert data["items"][11] == {"month": 12, "amount": "0.00", "count": 0}
 
 
+def test_template_ranking_requires_login_and_handles_no_orders(
+    client: TestClient, headers: dict[str, str]
+) -> None:
+    assert client.get("/api/orders/template-ranking").status_code == 401
+    response = client.get("/api/orders/template-ranking", headers=headers)
+    assert response.status_code == 200
+    assert response.json()["data"] == {"items": []}
+
+
+def test_template_ranking_counts_orders_across_years_and_is_scoped(
+    client: TestClient, headers: dict[str, str]
+) -> None:
+    for template, order_date, price in (
+        ("Template A", "2024-01-01", "1.00"),
+        ("Template A", "2025-01-01", "1.00"),
+        ("Template A", "2026-01-01", "1.00"),
+        ("Template B", "2026-02-01", "9999.00"),
+        ("Template B", "2026-02-02", "9999.00"),
+        ("Template C", "2026-03-01", "99999.00"),
+    ):
+        created = client.post(
+            "/api/orders",
+            headers=headers,
+            json=order_payload(template=template, order_date=order_date, price=price),
+        )
+        assert created.status_code == 201
+    other_headers = {"Authorization": f"Bearer {create_access_token('other')}"}
+    client.post("/api/orders", headers=other_headers, json=order_payload(template="Template C"))
+
+    response = client.get("/api/orders/template-ranking", headers=headers)
+    assert response.status_code == 200
+    assert response.json()["data"]["items"] == [
+        {"rank": 1, "template": "Template A", "count": 3},
+        {"rank": 2, "template": "Template B", "count": 2},
+        {"rank": 3, "template": "Template C", "count": 1},
+    ]
+
+
+def test_template_ranking_limits_to_ten_and_breaks_ties_by_template(
+    client: TestClient, headers: dict[str, str]
+) -> None:
+    for index in range(12, 0, -1):
+        client.post(
+            "/api/orders", headers=headers, json=order_payload(template=f"Template {index:02}")
+        )
+    client.post("/api/orders", headers=headers, json=order_payload(template="Template 12"))
+
+    response = client.get("/api/orders/template-ranking", headers=headers)
+    assert response.status_code == 200
+    items = response.json()["data"]["items"]
+    assert items == [
+        {"rank": 1, "template": "Template 12", "count": 2},
+        *[
+            {"rank": index + 1, "template": f"Template {index:02}", "count": 1}
+            for index in range(1, 10)
+        ],
+    ]
+
+
+def test_template_ranking_merges_embroidery_aliases_and_preserves_other_templates(
+    client: TestClient, headers: dict[str, str]
+) -> None:
+    for template in ("刺绣", "刺绣", "非遗刺绣", "新刺绣", "刺绣定制"):
+        created = client.post("/api/orders", headers=headers, json=order_payload(template=template))
+        assert created.status_code == 201
+    other_headers = {"Authorization": f"Bearer {create_access_token('other')}"}
+    client.post("/api/orders", headers=other_headers, json=order_payload(template="新刺绣"))
+
+    response = client.get("/api/orders/template-ranking", headers=headers)
+    assert response.status_code == 200
+    assert response.json()["data"]["items"] == [
+        {"rank": 1, "template": "刺绣", "count": 4},
+        {"rank": 2, "template": "刺绣定制", "count": 1},
+    ]
+
+
+def test_template_ranking_merges_aliases_before_selecting_top_ten(
+    client: TestClient, headers: dict[str, str]
+) -> None:
+    for index in range(1, 11):
+        for _ in range(2):
+            client.post(
+                "/api/orders",
+                headers=headers,
+                json=order_payload(template=f"Template {index:02}"),
+            )
+    for template in ("刺绣", "非遗刺绣", "新刺绣"):
+        client.post("/api/orders", headers=headers, json=order_payload(template=template))
+
+    response = client.get("/api/orders/template-ranking", headers=headers)
+    assert response.status_code == 200
+    assert response.json()["data"]["items"] == [
+        {"rank": 1, "template": "刺绣", "count": 3},
+        *[
+            {"rank": index + 1, "template": f"Template {index:02}", "count": 2}
+            for index in range(1, 10)
+        ],
+    ]
+
+
+def test_template_ranking_reflects_updated_and_deleted_orders(
+    client: TestClient, headers: dict[str, str]
+) -> None:
+    first = client.post(
+        "/api/orders", headers=headers, json=order_payload(template="Template A")
+    ).json()["data"]
+    second = client.post(
+        "/api/orders", headers=headers, json=order_payload(template="Template B")
+    ).json()["data"]
+    client.patch(f"/api/orders/{second['id']}", headers=headers, json={"template": "Template A"})
+    assert client.get("/api/orders/template-ranking", headers=headers).json()["data"]["items"] == [
+        {"rank": 1, "template": "Template A", "count": 2}
+    ]
+
+    client.delete(f"/api/orders/{first['id']}", headers=headers)
+    assert client.get("/api/orders/template-ranking", headers=headers).json()["data"]["items"] == [
+        {"rank": 1, "template": "Template A", "count": 1}
+    ]
+
+
 def test_import_orders_allows_partial_success(client: TestClient, headers: dict[str, str]) -> None:
     workbook = Workbook()
     sheet = workbook.active

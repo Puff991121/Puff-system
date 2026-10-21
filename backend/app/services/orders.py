@@ -5,7 +5,7 @@ from decimal import Decimal
 from uuid import uuid4
 from zoneinfo import ZoneInfo
 
-from sqlalchemy import Select, func, or_, select
+from sqlalchemy import Select, case, func, or_, select
 from sqlalchemy.orm import Session
 
 from app.models.order import Order
@@ -17,6 +17,7 @@ SORT_FIELDS = {
     "price": Order.price,
     "created_at": Order.created_at,
 }
+TEMPLATE_RANKING_ALIASES = {"非遗刺绣": "刺绣", "新刺绣": "刺绣"}
 
 
 def now() -> datetime:
@@ -150,6 +151,24 @@ def get_order_trend(db: Session, user_id: int, year: int) -> list[dict[str, Deci
         ).one()
         items.append({"month": month, "amount": Decimal(amount), "count": int(count)})
     return items
+
+
+def get_template_ranking(db: Session, user_id: int) -> list[dict[str, str | int]]:
+    template_name = case(
+        TEMPLATE_RANKING_ALIASES, value=Order.template, else_=Order.template
+    ).label("template")
+    order_count = func.count(Order.id)
+    rows = db.execute(
+        select(template_name, order_count)
+        .where(Order.user_id == user_id)
+        .group_by(template_name)
+        .order_by(order_count.desc(), template_name.asc())
+        .limit(10)
+    ).all()
+    return [
+        {"rank": rank, "template": template, "count": count}
+        for rank, (template, count) in enumerate(rows, start=1)
+    ]
 
 
 def get_order(db: Session, user_id: int, order_id: int) -> Order | None:

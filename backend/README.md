@@ -127,7 +127,7 @@ DELETE /api/assets/accounts/{id}   # 删除账户
 | `APP_ENV` | 运行环境：`development`、`test` 或 `production` |
 | `APP_DEBUG` | 是否开启调试模式 |
 | `APP_SECRET_KEY` | JWT 签名密钥，生产环境必须替换 |
-| `APP_ACCESS_TOKEN_EXPIRE_MINUTES` | Token 有效分钟数 |
+| `APP_ACCESS_TOKEN_EXPIRE_MINUTES` | Token 有效分钟数，默认 1440（1 天） |
 | `APP_CORS_ORIGINS` | 允许跨域的前端地址（JSON 数组） |
 | `APP_DATABASE_URL` | MySQL 数据库连接地址 |
 | `APP_ADMIN_USERNAME` | 本地演示管理员账号 |
