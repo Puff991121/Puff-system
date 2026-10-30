@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ArrowDown, Bell, Calendar, Coin, DataAnalysis, Expand, Fold, Grid, Setting, ShoppingCart, Wallet } from '@element-plus/icons-vue'
+import { ArrowDown, Bell, Calendar, Coin, DataAnalysis, Expand, Files, Fold, Grid, Link, Setting, ShoppingCart, Wallet } from '@element-plus/icons-vue'
 import { useAppStore } from '@/stores/app'
 import { useUserStore } from '@/stores/user'
 
@@ -28,6 +28,8 @@ const logout = () => {
       <el-menu :default-active="route.path" router :collapse="appStore.sidebarCollapsed">
         <el-menu-item index="/dashboard"><el-icon><Grid /></el-icon><template #title>数据概览</template></el-menu-item>
         <el-menu-item index="/orders"><el-icon><ShoppingCart /></el-icon><template #title>订单管理</template></el-menu-item>
+        <el-menu-item index="/templates"><el-icon><Files /></el-icon><template #title>模板管理</template></el-menu-item>
+        <el-menu-item index="/xianyu-links"><el-icon><Link /></el-icon><template #title>闲鱼链接</template></el-menu-item>
         <el-menu-item index="/todos"><el-icon><Calendar /></el-icon><template #title>待办事项</template></el-menu-item>
         <el-menu-item index="/expenses"><el-icon><Wallet /></el-icon><template #title>消费记录</template></el-menu-item>
         <el-menu-item index="/assets"><el-icon><Coin /></el-icon><template #title>资产管理</template></el-menu-item>

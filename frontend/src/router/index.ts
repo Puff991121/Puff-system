@@ -8,6 +8,8 @@ const routes: RouteRecordRaw[] = [
     children: [
       { path: 'dashboard', name: 'Dashboard', component: () => import('@/views/dashboard/DashboardView.vue'), meta: { title: '数据概览' } },
       { path: 'orders', name: 'Orders', component: () => import('@/views/order/OrderListView.vue'), meta: { title: '订单管理' } },
+      { path: 'templates', name: 'Templates', component: () => import('@/views/template/TemplateListView.vue'), meta: { title: '模板管理' } },
+      { path: 'xianyu-links', name: 'XianyuLinks', component: () => import('@/views/xianyu/XianyuLinksView.vue'), meta: { title: '闲鱼链接' } },
       { path: 'todos', name: 'Todos', component: () => import('@/views/todo/TodoListView.vue'), meta: { title: '待办事项' } },
       { path: 'expenses', name: 'Expenses', component: () => import('@/views/expense/ExpenseListView.vue'), meta: { title: '消费记录' } },
       { path: 'assets', name: 'Assets', component: () => import('@/views/asset/AssetManagementView.vue'), meta: { title: '资产管理' } },

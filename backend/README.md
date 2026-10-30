@@ -104,6 +104,18 @@ GET    /api/orders/export      # 导出 .xlsx
 
 订单只对所属用户可见，金额以 `Decimal` 处理并使用 MySQL `DECIMAL(18,2)` 保存。完整参数及响应格式以 Swagger 文档和前端的 `orders.md` 约定为准。
 
+### 模板管理
+
+模板接口使用 `/api/templates` 前缀，提供分页搜索、详情、新增、部分修改和删除，要求 Bearer Token。每个模板保存 Html（源代码）、Figma、Psd、Jsd（即时设计）、Xd 及素材的完整百度网盘分享文案，至少提供一项分享内容。模板名称在同一用户下唯一，数据按用户隔离，详情见 `frontend/templates.md`。
+
+新增表结构后在后端目录执行 `.venv/bin/alembic upgrade head`。
+
+### 闲鱼链接
+
+闲鱼链接接口使用 `/api/xianyu-links` 前缀，提供新增、部分修改、删除、详情和分页搜索，要求 Bearer Token。字段为闲鱼标题和闲鱼链接，按用户隔离，前端支持一键复制链接。详情见 `frontend/xianyu-links.md`。
+
+新增表结构后在后端目录执行 `.venv/bin/alembic upgrade head`。
+
 ### 资产管理
 
 资产接口统一使用 `/api/assets` 前缀，并要求 Bearer Token：
